@@ -134,10 +134,14 @@ public:
 
 
 	//best  approximation   accuracy
-	int   min_error_approximation(vector<Point> input, Mat srcImage ,  int & k   , vector<Point> &  contours_poly, double  & epsilon,  int  numRef )
+	int   min_error_approximation(
+		vector<Point> input, Mat srcImage ,  
+		int & k   , vector<Point> &  contours_poly,
+		double  & epsilon,  int  numRef
+	)
 	{
-		cout << "_______________________________________________________" << endl;
-		cout << "开始搜索最小方差项： " << endl;
+		
+		cout << "开始搜索最小方差项同时最小误差逼近： " << endl;
 
 		Point2f   core_origin;
 		double   radius_origin;
@@ -146,7 +150,7 @@ public:
 		vector<double >  sideLength_origin;
 		get_core_radius_of_contour(input, core_origin, radius_origin, sideMax_origin, sideMin_origin, sideLength_origin);
 
-		cout << "radius_origin = " << radius_origin <<   endl;
+		cout << "epsilon = " << epsilon <<   endl;
 
 		Mat  srcImage_show = srcImage.clone();
 		circle(srcImage_show, core_origin, radius_origin, Scalar(0, 255, 0), 1);
@@ -161,7 +165,7 @@ public:
 		//double  scale_shift = radius_origin  *10;  // radius_origin * 30;
 		//double  rateScale = 50;// 1;// 20;
 
-		const  double  stepLen = radius_origin / nums_of_get;// / 4;// *2;// / nums_of_get;// 10;// scale_shift / nums_of_get;
+		const  double  stepLen = epsilon/ nums_of_get  ;// radius_origin / nums_of_get;// / 4;// *2;// / nums_of_get;// 10;// scale_shift / nums_of_get;
 		double  min_var = 0;
 		int  i_special = 0;
 		vector<Point>    contours_poly_val;
@@ -225,10 +229,7 @@ public:
 			}
 		}
 
-		if (diff_rate_special >= 1.0)
-		{
-			//return -1;
-		}
+
 
 		//double    epsilon_val = 3.0  ;
 		cout << endl;  
@@ -249,6 +250,10 @@ public:
 		//approxPolyDP(input, contours_poly_val, i_special, true);
 		//contours_poly = contours_poly_val;
 		//k = contours_poly_val.size();
+		if (diff_rate_special >= 0.10  )
+		{
+			return -1;
+		}
 
 		return  0;
 	}
@@ -363,9 +368,10 @@ public:
 		vector<vector<Point>>contours_poly(contours.size());
 		for (int i = 0; i < contours.size(); i++)
 		{
-			if (i != 2)
-				continue;
-
+			//if (i != 2)
+			//	continue;
+			cout << "_______________________________________________________" << endl;
+			cout << "轮廓开始处理，编号 i = " <<  i<<    endl;
 			if (0)
 			{
 				double epsilon = 3.0;
@@ -374,9 +380,35 @@ public:
 			
 			if (1)
 			{
+				Point2f  core_origin;
+				double r_origin;
+				double sideMax_origin;
+				double sideMin_origin;
+				vector<double >  sideLength_origin;
+				get_core_radius_of_contour(contours[i], core_origin, r_origin, sideMax_origin, sideMin_origin, sideLength_origin);
+
+
 				int  k;
-				double  epsilon = 0;
-				int  res_b = min_error_approximation(contours[i], show_best,  k, contours_poly[i], epsilon,   i  );
+				double  epsilon = r_origin   ;
+				int  res_b = -1;
+				int u = 0;
+				while (1)
+				{
+					u++;
+					cout << "开始第几轮搜索：" << u << endl;
+					cout << "===================  ===================  ==================" <<    endl;
+					res_b = min_error_approximation(contours[i], show_best, k, contours_poly[i], epsilon, i);
+					if (res_b >= 0)
+						break;
+					else
+					{
+						epsilon = epsilon*0.5;
+						res_b = min_error_approximation(contours[i], show_best, k, contours_poly[i], epsilon, i);
+					}
+					if (u > 10)
+						break;
+				}
+				
 			}
 			cout << "i, contours[i].size() ,  contours_poly[i].size()   = " << i<<" , " << contours[i].size()   << " , " <<  contours_poly[i].size() <<    endl;
 			
@@ -400,8 +432,8 @@ public:
 		char  carNmae[300];
 		for (int i = 0; i < contours.size(); i++)
 		{
-			if (i != 2)
-				continue;
+			//if (i != 2)
+			//	continue;
 
 			Scalar color   = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
 			//color = Scalar(  255,  255- 10* i ,    10*i    );
