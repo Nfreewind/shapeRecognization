@@ -2,7 +2,7 @@
 
 hello,  shape reco
 
-<src="shapeRecognization/img/shot.png" size="40%"/>
+<img src="shapeRecognization/img/shot.png" size="40%"/>
 
  
 
