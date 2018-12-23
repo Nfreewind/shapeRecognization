@@ -132,7 +132,7 @@ public:
 		return  0;
 	}
 
-
+	// 最佳正多边形的逼近
 	//best  approximation   accuracy
 	int   min_error_approximation(
 		vector<Point> input, Mat srcImage ,  
@@ -142,6 +142,8 @@ public:
 	{
 		
 		cout << "开始搜索最小方差项同时最小误差逼近： " << endl;
+		int  k_in = k;
+
 
 		Point2f   core_origin;
 		double   radius_origin;
@@ -152,6 +154,7 @@ public:
 
 		cout << "epsilon = " << epsilon <<   endl;
 
+		//show 一下
 		Mat  srcImage_show = srcImage.clone();
 		circle(srcImage_show, core_origin, radius_origin, Scalar(0, 255, 0), 1);
 		for (int i = 0; i < input.size(); i++)
@@ -161,10 +164,8 @@ public:
 		imshow(("srcImage_show_" + to_string(numRef) + ".jpg").c_str(), srcImage_show);
 		waitKey(200);
 
-		int  nums_of_get = 15;// 10;// radius_origin * 30;// 100;// radius_origin * 30;// 100;
-		//double  scale_shift = radius_origin  *10;  // radius_origin * 30;
-		//double  rateScale = 50;// 1;// 20;
 
+		int  nums_of_get = 15;// 10;// radius_origin * 30;// 100;// radius_origin * 30;// 100;
 		const  double  stepLen = epsilon/ nums_of_get  ;// radius_origin / nums_of_get;// / 4;// *2;// / nums_of_get;// 10;// scale_shift / nums_of_get;
 		double  min_var = 0;
 		int  i_special = 0;
@@ -245,26 +246,107 @@ public:
 		imshow(("srcImage_show_poly_" + to_string(numRef) + ".jpg").c_str(), srcImage_show_poly);
 		waitKey(200);
 
-
-		//vector<Point>    contours_poly_val;
-		//approxPolyDP(input, contours_poly_val, i_special, true);
-		//contours_poly = contours_poly_val;
-		//k = contours_poly_val.size();
+		//0.10 是经验数值，避免对圆做逼近的时候出现外接四边形这类高误差率的逼近
 		if (diff_rate_special >= 0.10  )
 		{
 			return -1;
 		}
 
-		return  0;
+		return    k;
+
+
+		//return  0;
 	}
 
 
-	//best const k  approximation   accuracy
-	int   min_error_approximation_const_k(vector<Point> input, Mat  srcImage, int & k, vector<Point> &  contours_poly, double  & epsilon)
-	{
-		double    epsilon_val = 3.0;
-		approxPolyDP(input, contours_poly, epsilon_val, true);
 
+	int  best_fit( Mat show_best ,  vector<Point >  input  , vector<Point > & contours_poly,  int & k , int  nums_ref   )
+	{
+		if (1)
+		{
+			Point2f  core_origin;
+			double r_origin;
+			double sideMax_origin;
+			double sideMin_origin;
+			vector<double >  sideLength_origin;
+			get_core_radius_of_contour(input, core_origin, r_origin, sideMax_origin, sideMin_origin, sideLength_origin);
+
+
+			//int  k = 4;
+			double  epsilon = r_origin;
+			int  res_k = -1;
+			int generation = 0;
+			while (1)
+			{
+				generation++;
+				cout << "开始第几轮搜索：generation = " << generation << endl;
+				cout << "===================  ===================  ==================" << endl;
+				res_k = min_error_approximation(input, show_best, k, contours_poly , epsilon, nums_ref);
+				if (res_k >= 3)
+					break;  
+				else  if (res_k< 3)
+				{
+					epsilon = epsilon*0.5;
+					res_k = min_error_approximation(input, show_best, k, contours_poly , epsilon, nums_ref);
+				}
+
+				if (generation> 10)
+					break;
+			}
+			k = res_k;
+
+		}
+		return  0;
+	}
+
+	
+
+
+	//最佳指定边数的逼近
+	//best const k  approximation   accuracy
+		int  best_fit_const_k(Mat show_best, vector<Point >  input, vector<Point > & contours_poly, int &  k, int  nums_ref)
+	{
+		if (1)
+		{
+
+
+			Point2f  core_origin;
+			double r_origin;
+			double sideMax_origin;
+			double sideMin_origin;
+			vector<double >  sideLength_origin;
+			get_core_radius_of_contour(input, core_origin, r_origin, sideMax_origin, sideMin_origin, sideLength_origin);
+
+
+			//int  k = 4;
+			double  epsilon = r_origin;
+			int  res_k = -1;
+			int generation = 0;
+			while (1)
+			{
+				generation++;
+				cout << "开始第几轮搜索：generation = " << generation << endl;
+				cout << "===================  ===================  ==================" << endl;
+				res_k = min_error_approximation(input, show_best, k, contours_poly, epsilon, nums_ref);
+				if (k   ==  res_k  )
+					break;
+				else  if (k > res_k   )
+				{
+					epsilon = epsilon *2.0;
+					res_k = min_error_approximation(input, show_best, k, contours_poly, epsilon, nums_ref);
+				}
+				else
+				{
+					epsilon = epsilon * 0.5;
+					res_k = min_error_approximation(input, show_best, k, contours_poly, epsilon, nums_ref);
+				}
+
+				if (generation> 10)
+					break;
+			}
+			k = res_k;
+
+		}
 		return  0;
 	}
 
@@ -378,40 +460,25 @@ public:
 				approxPolyDP(Mat(contours[i]), contours_poly[i], epsilon, true);
 			}
 			
-			if (1)
+			int  k = 0;
+			//任意边数的多边形逼近
+			if (0)
 			{
-				Point2f  core_origin;
-				double r_origin;
-				double sideMax_origin;
-				double sideMin_origin;
-				vector<double >  sideLength_origin;
-				get_core_radius_of_contour(contours[i], core_origin, r_origin, sideMax_origin, sideMin_origin, sideLength_origin);
-
-
-				int  k;
-				double  epsilon = r_origin   ;
-				int  res_b = -1;
-				int u = 0;
-				while (1)
-				{
-					u++;
-					cout << "开始第几轮搜索：" << u << endl;
-					cout << "===================  ===================  ==================" <<    endl;
-					res_b = min_error_approximation(contours[i], show_best, k, contours_poly[i], epsilon, i);
-					if (res_b >= 0)
-						break;
-					else
-					{
-						epsilon = epsilon*0.5;
-						res_b = min_error_approximation(contours[i], show_best, k, contours_poly[i], epsilon, i);
-					}
-					if (u > 10)
-						break;
-				}
+				
+				best_fit(show_best, contours[i], contours_poly[i], k,  i  );
 				
 			}
-			cout << "i, contours[i].size() ,  contours_poly[i].size()   = " << i<<" , " << contours[i].size()   << " , " <<  contours_poly[i].size() <<    endl;
+			cout << "i, k,  contours[i].size() ,  contours_poly[i].size()   = " << i<<" , "<<k<<" , " << contours[i].size()   << " , " <<  contours_poly[i].size() <<    endl;
 			
+
+			//指定边数的多边形逼近
+			if (1)
+			{
+				best_fit_const_k(show_best, contours[i], contours_poly[i], k, i);
+
+			}
+
+
 			Point2f  core;
 			double r;
 			double sideMax;
