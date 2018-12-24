@@ -19,12 +19,12 @@ class CAboutDlg : public CDialogEx
 public:
 	CAboutDlg();
 
-// 对话框数据
+	// 对话框数据
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_ABOUTBOX };
 #endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 
 // 实现
@@ -194,12 +194,20 @@ void CshapeRecognizationDlg::OnBnClickedButton1_shapeReco()
 	fetchFileName(nameOut);
 
 	cv::Mat  src = imread(nameOut);
-	cv::imshow("src",   src);
+	if (!src.data)
+	{
+		FreeConsole();
+		return;
+	}
+		
+
+
+	cv::imshow("src", src);
 	cv::waitKey(10);
 
 	shapeRecognizer   sr;
 	vector<vector<Point> >     contours;
-	sr.getContours(     src, contours);
+	sr.getContours(src, contours);
 
 	cv::waitKey();
 
