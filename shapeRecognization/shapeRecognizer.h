@@ -168,7 +168,7 @@ public:
 		waitKey(200);
 
 
-		const  double   nums_of_get = 15;// 15;// 10;// radius_origin * 30;// 100;// radius_origin * 30;// 100;
+		const  double   nums_of_get = 3;//;// 15;// 5;// 15;// 15;// 10;// radius_origin * 30;// 100;// radius_origin * 30;// 100;
 		const  double  stepLen = (epsilonSup - epsilonInf  ) / nums_of_get;// radius_origin / nums_of_get;// / 4;// *2;// / nums_of_get;// 10;// scale_shift / nums_of_get;
 		double  min_var = 0;
 		int  i_special = 0;
@@ -352,20 +352,24 @@ public:
 			get_core_radius_of_contour(input, core_origin, r_origin, sideMax_origin, sideMin_origin, sideLength_origin);
 
 
-			//int  k = 4;
 			double  epsilon = r_origin;
-			int  ref_k = k;
+			const  int  ref_k =  4;
 			int generation = 0;
 			int  res_findEp;
+			double epsilonInf = 1;
+			double epsilonSup = r_origin* 2;
+			const int   decade = 5;
 			cout << "现在开始第几轮搜索最佳epsilon:  " <<  endl;
 			while (1)
 			{
 				generation++;
 				cout << "=========  ==========  第几代？ generation =  " << generation <<  endl;
-				double epsilonInf = 1;
-				double epsilonSup = r_origin;
+
 				//const  int  
-				res_findEp = min_error_approximation(input, show_best, epsilonInf, epsilonSup, nums_ref, k, contours_poly,   rate_error_control,  rate_error__appMinusOrigin);
+				res_findEp = min_error_approximation(
+					input, show_best, epsilonInf, epsilonSup, nums_ref,
+					k, contours_poly,  
+					rate_error_control,  rate_error__appMinusOrigin);
 				//res_findEp = min_error_approximation(input, show_best, k, contours_poly, epsilon, nums_ref,   rate_error );
 				if (k == ref_k)
 				{
@@ -373,22 +377,26 @@ public:
 				}
 				else  if (k > ref_k)
 				{
-					epsilonInf = epsilonInf *1.05;
+					epsilonInf = max(1.0,  epsilonInf *1.05 );
 					epsilonSup = epsilonSup *1.05;
-					res_findEp = min_error_approximation(input, show_best, epsilonInf, epsilonSup, nums_ref, k, contours_poly, rate_error_control, rate_error__appMinusOrigin);
+					res_findEp = min_error_approximation(input, show_best, epsilonInf, epsilonSup, nums_ref,
+						k, contours_poly,
+						rate_error_control, rate_error__appMinusOrigin);
 				}
 				else
 				{
-					epsilonInf = epsilonInf *0.95;
+					epsilonInf = max(1.0, epsilonInf *0.95 );
 					epsilonSup = epsilonSup *0.95;
-					res_findEp = min_error_approximation(input, show_best, epsilonInf, epsilonSup, nums_ref, k, contours_poly, rate_error_control, rate_error__appMinusOrigin);
+					res_findEp = min_error_approximation(input, show_best, epsilonInf, epsilonSup, nums_ref,
+						k, contours_poly,
+						rate_error_control, rate_error__appMinusOrigin);
 				}
 
-				if (generation > 6)
+				if (generation > decade)
 					break;
 			}
 			//k = ref_k;
-			if (res_findEp < 0)
+			if (k != ref_k)
 				return -1;
 			else
 				return  0;
@@ -499,13 +507,14 @@ public:
 		cv::waitKey(10);
 
 		vector<vector<Point> >   contours;
-		contours = hull;
+		contours = hull;// contours_origin;// hull;
 
 		// 最佳逼近
 		Mat show_best = src_t.clone();
 		vector<vector<Point>>contours_poly(contours.size());
 		for (int i = 0; i < contours.size(); i++)
 		{
+			if( i!=  2 )
 			cout << "_________________________________________________________________________________" << endl;
 			cout << "轮廓开始处理，编号 i = " << i << endl;
 			if (0)
@@ -514,9 +523,9 @@ public:
 				approxPolyDP(Mat(contours[i]), contours_poly[i], epsilon, true);
 			}
 
-			int  k = 0;
+			int  k = -1;
 			//任意边数的多边形逼近
-			if (   1  )
+			if (   0  )
 			{
 				cout << "任意多边形拟合开始：" << endl;
 				const  double  rate_error_control = 0.10;
@@ -529,16 +538,17 @@ public:
 
 
 
-			//指定边数的多边形逼近
-			if (    0 )
+			//指定边数的多边形逼近    1  
+			if (   1 )
 			{
 				cout << "四边形拟合开始：" << endl;
 				k = 4;
-				double  rate_error = 0.70;
-				const  double  rate_error_control = 0.30;
+				const  int   k_control = 4;//  rate_error = 0.70;
+				const  double  rate_error_control = 0.66;
 				double  rate_error__appMinusOrigin = 1.0;
-				int  res_fit4 = best_fit_const_k_drivedByErrorRate(show_best, contours[i], contours_poly[i], k, i ,  rate_error_control, rate_error__appMinusOrigin);
-				if (res_fit4 < 0)
+				int  res_fit4 = best_fit_const_k_drivedByErrorRate(show_best, contours[i], contours_poly[i], k,
+					i , rate_error_control, rate_error__appMinusOrigin);
+				if ( k  != k_control)
 				{
 					cout << "四边形拟合失败。" << endl;
 				}
@@ -546,47 +556,89 @@ public:
 				{
 					cout << "四边形拟合成功。" << endl;
 				}
-				cout << "<--> i, k,  contours[i].size() ,  contours_poly[i].size()   = " << i << " , " << k << " , " << contours[i].size() << " , " << contours_poly[i].size() << endl;
+				cout << "<--> i ,  k,    contours_poly[i].size() ,  rate_error__appMinusOrigin,  contours[i].size() ,  = " << i << " , " << k << " , ";
+				cout << contours_poly[i].size() << ",";
+				cout << rate_error__appMinusOrigin << " , " << contours[i].size() << endl;
 			}
 			
 
-			Point2f  core;
-			double r;
-			double sideMax;
-			double sideMin;
-			vector<double >  sideLength;
-			get_core_radius_of_contour(contours_poly[i], core, r, sideMax, sideMin, sideLength);
-			putText(show_best, to_string(i).c_str(), Point(core.x, core.y), 1, 3, Scalar(255, 255, 255));
-			circle(show_best, core, 2, Scalar(0, 255, 255), 1, 8, 0);
-			circle(show_best, core, r, Scalar(0, 0, 255), 1, 8, 0);
+
+
+			//最小矩形覆盖
+			if (   0  )
+			{
+				Mat  画布 = src_t.clone();
+				for (int i = 0; i < contours.size(); i++)
+				{
+					//绘制轮廓  
+					drawContours(画布, contours, i, Scalar(255), 1, 8);
+
+					RotatedRect rect = minAreaRect(contours[i]);
+					Point2f P[4];
+
+					rect.points(P);
+					for (int j = 0; j <= 3; j++)
+					{
+						//line(原图, P[j], P[(j + 1) % 4], Scalar(0, 0, 255), 1);
+						line(画布, P[j], P[(j + 1) % 4], Scalar(111), 2);
+					}
+				}
+				imwrite("画布.jpg", 画布);
+				imshow( "画布", 画布);
+				waitKey( 20 );
+			}
+
+
+
+			if (   1  )
+			{
+				Point2f  core;
+				double r;
+				double sideMax;
+				double sideMin;
+				vector<double >  sideLength;
+				get_core_radius_of_contour(contours_poly[i], core, r, sideMax, sideMin, sideLength);
+				putText(show_best, to_string(i).c_str(), Point(core.x, core.y), 1, 3, Scalar(255, 255, 255));
+				circle(show_best, core, 2, Scalar(0, 255, 255), 1, 8, 0);
+				circle(show_best, core, r, Scalar(0, 0, 255), 1, 8, 0);
+
+			}
+
 		}
-		imshow("show_best", show_best);
-		cv::waitKey(10);
+
 
 
 		contours_t = contours_poly;
 
-
-		//显示最终结果
-		RNG rng(12345);
-		Mat  drawing_final = src_t.clone();
-		char  carNmae[300];
-		for (int i = 0; i < contours.size(); i++)
+		if (   1  )
 		{
-			//if (i != 2)
-			//	continue;
+			imwrite("show_best.jpg", show_best);
+			imshow("show_best", show_best);
+			cv::waitKey(10);
 
-			Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
-			//color = Scalar(  255,  255- 10* i ,    10*i    );
-			drawContours(drawing_final, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point());
-			for (int j = 0; j < contours_poly[i].size(); j++)
+			//显示最终结果
+			RNG rng(12345);
+			Mat  drawing_final = src_t.clone();
+			char  carNmae[300];
+			for (int i = 0; i < contours_t.size(); i++)
 			{
-				sprintf(carNmae, "%d", j);
-				putText(drawing_final, carNmae, contours_poly[i][j], 1, 1, Scalar(255, 0, 255));
+				//if (i != 2)
+				//	continue;
+
+				Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
+				//color = Scalar(  255,  255- 10* i ,    10*i    );
+				drawContours(drawing_final, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point());
+				for (int j = 0; j < contours_poly[i].size(); j++)
+				{
+					sprintf(carNmae, "%d", j);
+					putText(drawing_final, carNmae, contours_poly[i][j], 1, 1, Scalar(255, 0, 255));
+				}
 			}
+			imwrite("drawing_final.jpg", drawing_final);
+			imshow("drawing_final", drawing_final);
+			cv::waitKey(10);
 		}
-		imshow("drawing_final", drawing_final);
-		cv::waitKey(10);
+
 
 		return 0;
 	}
