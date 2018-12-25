@@ -765,14 +765,14 @@ public:
 					putText(drawing_final, carNmae, contours_poly[i][j], 1, 1, Scalar(255, 0, 255));
 				}
 			}
-			imwrite((nameOfImageIn+"show_best.jpg.generation." + to_string(0) + ".jpg").c_str(), show_best);
-			imshow((nameOfImageIn + "show_best.jpg.generation." + to_string(0) + ".jpg").c_str(), show_best);
+			imwrite((nameOfImageIn+"show_best.jpg.k_solid." + to_string(k_solid) + ".jpg").c_str(), show_best);
+			imshow((nameOfImageIn + "show_best.jpg.k_solid." + to_string(k_solid) + ".jpg").c_str(), show_best);
 			cv::waitKey(10);
 
 
 
-			imwrite((nameOfImageIn + "drawing_final.jpg.generation." + to_string(0) + ".jpg").c_str(), drawing_final);
-			imshow((nameOfImageIn + "drawing_final.jpg.generation." + to_string(0) + ".jpg").c_str(), drawing_final);
+			imwrite((nameOfImageIn + "drawing_final.jpg.k_solid." + to_string(k_solid) + ".jpg").c_str(), drawing_final);
+			imshow((nameOfImageIn + "drawing_final.jpg.k_solid." + to_string(k_solid) + ".jpg").c_str(), drawing_final);
 			cv::waitKey(10);
 		}
 		return 0;
