@@ -234,7 +234,8 @@ public:
 					k = contours_poly_val.size();
 					radius_special_poly = radius;
 					diff_rate_special = diff_rate_polyMinusOrigin;
-					rate_error__approMinusOrigin = diff_rate_polyMinusOrigin;
+					//rate_error__approMinusOrigin = diff_rate_polyMinusOrigin;
+					rate_error__approMinusOrigin = evauluation_tmp;
 					core_special = core;
 
 					evauluation = evauluation_tmp;
@@ -250,7 +251,7 @@ public:
 					k = contours_poly_val.size();
 					radius_special_poly = radius;
 					diff_rate_special = diff_rate_polyMinusOrigin;
-					rate_error__approMinusOrigin = diff_rate_polyMinusOrigin;
+					//rate_error__approMinusOrigin = diff_rate_polyMinusOrigin;
 					core_special = core;
 
 					evauluation = evauluation_tmp;
@@ -270,7 +271,8 @@ public:
 						k = contours_poly_val.size();
 						radius_special_poly = radius;
 						diff_rate_special = diff_rate_polyMinusOrigin;
-						rate_error__approMinusOrigin = diff_rate_polyMinusOrigin;
+						//rate_error__approMinusOrigin = diff_rate_polyMinusOrigin;
+						rate_error__approMinusOrigin = evauluation_tmp;
 						core_special = core;
 
 						evauluation = evauluation_tmp;
@@ -287,7 +289,8 @@ public:
 						k = contours_poly_val.size();
 						radius_special_poly = radius;
 						diff_rate_special = diff_rate_polyMinusOrigin;
-						rate_error__approMinusOrigin = diff_rate_polyMinusOrigin;
+						//rate_error__approMinusOrigin = diff_rate_polyMinusOrigin;
+						rate_error__approMinusOrigin = evauluation_tmp;
 						core_special = core;
 
 						evauluation = evauluation_tmp;
@@ -637,27 +640,15 @@ public:
 			{
 				cout << "四边形拟合开始：" << endl;
 				k = -1;
-				   int   k_control = k_solid   ;//  rate_error = 0.70;
+				int   k_control = k_solid;//  rate_error = 0.70;
 				const  double  rate_error_control_Inf = 0;// 0.07510;
 				double  rate_error_control_Sup = rateErrorSup;// 0.15;// 0.07510;
-				//const  double  rate_error_control = 0.90;//  0.67
 				double  rate_error__appMinusOrigin = 1.0;
 				int  steps = numsSteps;// 30;
 				generation = best_fit_const_k_drivedByErrorRate(show_best, contours[i], contours_poly[i], k,
 					i, rate_error_control_Inf, rate_error_control_Sup, rate_error__appMinusOrigin, steps, k_control);
 
 				vct__generation.push_back(generation);
-				//int  generaton_append = 1;
-				////int  indic = 0;
-				//while (k != k_control   )
-				//{
-				   // cout << "增补处理第几代？   generaton_append = " << generaton_append << endl;
-				   // steps = steps * 2;
-				   // generation = best_fit_const_k_drivedByErrorRate(show_best, contours[i], contours_poly[i], k,
-					  //  i, rate_error_control_Inf, rate_error_control_Sup, rate_error__appMinusOrigin, steps);
-				   // if(steps >    )
-				//}
-
 				if (k != k_control)
 				{
 					cout << "四边形拟合失败。k , k_control = " << k << " , " << k_control << endl;
@@ -676,21 +667,68 @@ public:
 			//方法：方差var要最小，s.t.  误差在一定范围[alpha,beta]内考虑，即对上界贪婪，也对下界贪婪。
 			if (opt_function == 3)
 			{
-				cout << "任意多边形拟合开始：" << endl;
-				const  double  rate_error_control_Inf = 0;      // 0.07510;
-				double  rate_error_control_Sup = rateErrorSup;// 0.15;// 0.07510;
-				double  rate_error__appMinusOrigin = 1.0;
-				int  res_bf = best_fit__recoItsShape(show_best, contours[i], contours_poly[i], k,
-					i,
-					rate_error_control_Inf, rate_error_control_Sup,
-					rate_error__appMinusOrigin, numsSteps);
-				cout << "(--) i ,  k,    contours_poly[i].size() ,  rate_error__appMinusOrigin,  contours[i].size() ,  = " << i << " , " << k << " , ";
-				cout << contours_poly[i].size() << ",";
-				cout << rate_error__appMinusOrigin << " , " << contours[i].size() << endl;
-				if (res_bf < 0)
-					cout << ">>>>>>>>>>>>>>>>>>>  在该尺度下拟合失败。" << endl;
-				else
-					cout << "在该尺度下拟合成功。" << endl;
+				//if (i != 2)
+				//	continue;
+
+
+				vector< int >   vct_k_s;
+				vector< double  >   vct_evaluation;
+				int ind_k = -1;
+				double  ind_evalu = -1;
+				vector<Point >   poly_very_k;
+				 for (int  k_dir = 3; k_dir < 10; k_dir++ )
+				{
+					cout << "识别多边形边数--开始：" << endl;
+					k = -1;
+					int   k_control = k_solid;//  rate_error = 0.70;
+					const  double  rate_error_control_Inf = 0;// 0.07510;
+					double  rate_error_control_Sup = rateErrorSup;// 0.15;// 0.07510;
+					double  rate_error__appMinusOrigin = -10.0;
+					int  steps = numsSteps;// 30;
+					generation = best_fit_const_k_drivedByErrorRate(show_best, contours[i], contours_poly[i], k,
+						i, rate_error_control_Inf, rate_error_control_Sup, rate_error__appMinusOrigin, steps, k_dir);
+
+					vct__generation.push_back(generation);
+					if (k != k_dir)
+					{
+						cout << "四边形拟合失败。k , k_control = " << k << " , " << k_dir << endl;
+						continue;
+					}
+					else
+					{
+						vct_k_s.push_back(  k  );
+						vct_evaluation.push_back(rate_error__appMinusOrigin);
+						cout << "四边形拟合成功。k , k_control = " << k << " , " << k_dir << endl;
+
+						if (ind_k == -1)
+						{
+							ind_k = k;
+							ind_evalu = rate_error__appMinusOrigin;
+							poly_very_k = contours_poly[i];
+						}
+						if (ind_evalu < rate_error__appMinusOrigin)
+						{
+							ind_k = k;
+							ind_evalu = rate_error__appMinusOrigin;
+							poly_very_k = contours_poly[i];
+						}
+
+					}
+					cout << "<--> i ,  k,    contours_poly[i].size() ,  rate_error__appMinusOrigin,  contours[i].size() ,  = ";
+						cout << i << " , " << k << " , ";
+					cout << contours_poly[i].size() << ",";
+					cout << rate_error__appMinusOrigin << " , " << contours[i].size() << endl;
+				}
+				 if (ind_k == -1)
+				 {
+					 cout << "识别失败：ind_k = " << ind_k << endl;
+				 }
+				 else
+				 {
+					 cout << "最终识别出这是个几边形了：ind_k = " << ind_k << endl;
+					 contours_poly[i] = poly_very_k;
+				 }
+
 			}
 
 			//最小矩形覆盖       -1
