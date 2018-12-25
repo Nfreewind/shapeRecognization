@@ -13,6 +13,7 @@
 <img src="shapeRecognization/imagesOut/7.jpgdrawing_final.jpg.k_solid.5.jpg" size="40%"/>
 <img src="shapeRecognization/imagesOut/7.jpgdrawing_final.jpg.k_solid.8.jpg" size="40%"/>
 
+<img src="shapeRecognization/画布.jpg" size="40%"/>
 
 <img src="shapeRecognization/imagesOut/drawing_final.jpg" size="40%"/>
 <img src="shapeRecognization/imagesOut/show_best.jpg" size="40%"/>
