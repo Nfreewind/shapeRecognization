@@ -36,4 +36,15 @@ public:
 	afx_msg void OnBnClickedButton1_shapeReco();
 
 	void CshapeRecognizationDlg::fetchFileName(string & nameOut);
+
+	int  opt_function;
+	afx_msg void OnBnClickedButton2_setIdFunction();
+	afx_msg void OnBnClickedButton3s_setRateErrorSup();
+
+	double  rateErrorSup;
+	int  numsSteps;
+	afx_msg void OnBnClickedButton4_setNumsSteps();
+	afx_msg void OnBnClickedButton5_setK();
+
+	int  k_solid ;
 };
