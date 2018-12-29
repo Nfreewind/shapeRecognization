@@ -580,7 +580,7 @@ public:
 
 		// ÂÖÀª
 		vector<vector<Point> >     contours_origin;
-		findContours(src, contours_origin, CV_RETR_EXTERNAL, 1);
+		findContours(src, contours_origin, CV_RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 
 		//Ñ°ÕÒÍ¼ÏñÍ¹°ü
 		vector<vector<Point> >  hull(contours_origin.size());
@@ -788,7 +788,8 @@ public:
 				vector<double >  sideLength;
 				get_core_radius_of_contour(contours_poly[i], core, r, sideMax, sideMin, sideLength);
 				putText(show_best, to_string(i).c_str(), Point(core.x, core.y), 1, 3, Scalar(255, 255, 255));
-				putText(show_best, to_string(vct__generation[i]).c_str(), Point(core.x + 18, core.y + 18), 1, 3, Scalar(0, 255, 0));
+				if(vct__generation.size()> 0 )
+				  putText(show_best, to_string(vct__generation[i]).c_str(), Point(core.x + 18, core.y + 18), 1, 3, Scalar(0, 255, 0));
 				circle(show_best, core, 2, Scalar(0, 255, 255), 1, 8, 0);
 				circle(show_best, core, r, Scalar(0, 0, 255), 1, 8, 0);
 

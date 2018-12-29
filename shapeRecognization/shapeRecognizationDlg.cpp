@@ -383,10 +383,10 @@ void CshapeRecognizationDlg::OnBnClickedButton1_shapeReco()
 	cv::waitKey(10);
 
 	shapeRecognizer   sr;
-	vector<vector<Point> >     contours;
+	vector<vector<Point> >     contours_poly;
 	//int   opt_function_t = this->opt_function;
 	//int  numsSteps;
-	sr.getContours(src, contours,
+	sr.getContours(src, contours_poly,
 		this->opt_function, this->rateErrorSup,
 		this->numsSteps, this->k_solid,
 		nameOut
